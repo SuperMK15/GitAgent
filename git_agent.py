@@ -96,8 +96,6 @@ def cohere_commenter(_cohere_api: CohereAPI, code: str):
         "Return only the commented code as the output."
     )
     
-    print (prompt)
-    
     return _cohere_api.send_prompt(prompt, stream=False)
 
 @st.cache_resource
