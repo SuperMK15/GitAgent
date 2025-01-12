@@ -49,7 +49,7 @@ def cohere_readme_result(_cohere_api: CohereAPI):
     :param prompt: The user prompt
     :return: The result of the Cohere prompt
     """
-    prompt = "Generate a README for the code_repo in the documents. Return ONLY the generated markdown and NOTHING ELSE."
+    prompt = "Generate a root level README.md for the code_repo in the documents. Return ONLY the generated markdown and NOTHING ELSE."
     return _cohere_api.send_prompt(prompt, stream=True)
 
 # Cache the results of Cohere semantic search
