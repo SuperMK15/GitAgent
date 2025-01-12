@@ -25,9 +25,11 @@ class GitHubAPI:
         """
         url = f"{self.base_url}/repos/{self.owner}/{self.repo}/contents/{path}"
         headers = {
-            "Authorization": f"Bearer {self.access_token}",
             "Accept": "application/vnd.github.v3.raw",
         }
+        if self.access_token:
+            headers["Authorization"] = f"Bearer {self.access_token}"
+            
         params = {"ref": branch}
         response = requests.get(url, headers=headers, params=params)
         if response.status_code == 200:
@@ -55,9 +57,10 @@ class GitHubAPI:
         """
         url = f"{self.base_url}/repos/{self.owner}/{self.repo}/git/refs/heads"
         headers = {
-            "Authorization": f"Bearer {self.access_token}",
             "Accept": "application/vnd.github.v3+json",
         }
+        if self.access_token:
+            headers["Authorization"] = f"Bearer {self.access_token}"
         
         result = requests.get(url, headers=headers)
         
@@ -113,9 +116,10 @@ class GitHubAPI:
         :return: JSON response containing user details.
         """
         url = f"{self.base_url}/user"
-        headers = {
-            "Authorization": f"Bearer {self.access_token}",
-        }
+        headers = {}
+        if self.access_token:
+            headers["Authorization"] = f"Bearer {self.access_token}"
+            
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             return response.json()

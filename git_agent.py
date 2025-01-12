@@ -143,7 +143,11 @@ if repo_link:
         cohere_api.set_documents([{"title": "code_repo", "snippet": txt}, {"title": "remote_origin", "snippet": github_path}])
         
         # Setup GitHubAPI
-        github_api = GitHubAPI(access_token=st.secrets["GITHUB_API_KEY"], owner=owner, repo=repo)
+        ## check if st.secrets["GITHUB_API_KEY"] exists
+        try:
+            github_api = GitHubAPI(access_token=st.secrets["GITHUB_API_KEY"], owner=owner, repo=repo)
+        except:
+            github_api = GitHubAPI(access_token="", owner=owner, repo=repo)
         
         # Show success message after fetching repository content
         st.success("GitAgent has studied your repository!")
