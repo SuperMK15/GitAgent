@@ -41,7 +41,7 @@ def fetch_file_content(_github_api: GitHubAPI, path: str):
 
 # Cache the results of Cohere readme generation
 @st.cache_resource
-def cohere_readme_result(_cohere_api: CohereAPI):
+def cohere_generate_readme(_cohere_api: CohereAPI, remote_origin: str):
     """
     Send a prompt to Cohere and cache the result.
     
@@ -49,7 +49,7 @@ def cohere_readme_result(_cohere_api: CohereAPI):
     :param prompt: The user prompt
     :return: The result of the Cohere prompt
     """
-    prompt = "Generate a root level README.md for the code_repo in the documents. Return ONLY the generated markdown and NOTHING ELSE."
+    prompt = f"Generate a root level README.md for the code_repo (remote origin: {remote_origin}) in the documents. Return ONLY the generated markdown and NOTHING ELSE."
     return _cohere_api.send_prompt(prompt, stream=True)
 
 # Cache the results of Cohere semantic search
@@ -132,7 +132,7 @@ if repo_link:
         
         # Setup CohereAPI
         cohere_api = CohereAPI(api_key=st.secrets["COHERE_API_KEY"], model="command-r-plus-08-2024")
-        cohere_api.set_documents([{"title": "code_repo", "snippet": txt}])
+        cohere_api.set_documents([{"title": "code_repo", "snippet": txt}, {"title": "remote_origin", "snippet": github_path}])
         
         # Setup GitHubAPI
         github_api = GitHubAPI(access_token=st.secrets["GITHUB_API_KEY"], owner=owner, repo=repo)
@@ -161,6 +161,7 @@ if repo_link:
             
         elif option == "Instructed Refactor":
             filepath = st.text_input("Enter file path to the code you wish to refactor")
+            commit_to_repo = st.checkbox("Commit refactored code to repository", value=True)
             if filepath:
                 file_content = fetch_file_content(_github_api=github_api, path=filepath)
                 st.code(file_content, line_numbers=True, wrap_lines = False)
@@ -176,12 +177,26 @@ if repo_link:
                     
                     st.write(refactored_code)
                     
-                    if st.button("Commit refactored code to repository"):
-                        st.success("Code committed successfully!")
+                    if commit_to_repo:
+                        refactored_code_to_commit = "\n".join(refactored_code.split("\n")[1:-1])
+                        
+                        with st.spinner("Committing refactored code to repository..."):
+                            github_api.commit_file_to_new_branch(
+                                path=filepath,
+                                file_content=refactored_code_to_commit,
+                                commit_message="Refactor code",
+                                branch="refactor-code"
+                            )
+                        
+                        st.success("Code refactored and committed successfully!")
+                    else:
+                        st.success("Code refactored successfully!")
                 
             
         elif option == "Auto Commenter":
             filepath = st.text_input("Enter file path to the code you wish to comment")
+            commit_to_repo = st.checkbox("Commit commented code to repository", value=True)
+            
             if filepath:
                 file_content = fetch_file_content(_github_api=github_api, path=filepath)
                 st.code(fetch_file_content(_github_api=github_api, path=filepath), line_numbers=True, wrap_lines = False)
@@ -192,14 +207,26 @@ if repo_link:
                     
                     st.write(commented_code)
                     
-                    if st.button("Commit commented code to repository"):
-                        st.success("Code committed successfully!")
+                    if commit_to_repo:
+                        commented_code_to_commit = "\n".join(commented_code.split("\n")[1:-1])
+                        
+                        with st.spinner("Committing commented code to repository..."):
+                            github_api.commit_file_to_new_branch(
+                                path=filepath,
+                                file_content=commented_code_to_commit,
+                                commit_message="Add comments to code",
+                                branch="add-comments"
+                            )
+                        
+                        st.success("Code commented and committed successfully!")
+                    else:
+                        st.success("Code commented successfully!")
             
         elif option == "README Generator":
-            commit_to_repo = st.checkbox("Commit README to repository")
+            commit_to_repo = st.checkbox("Commit README to repository", value=True)
             
             if st.button("Generate README"):
-                result = cohere_readme_result(_cohere_api=cohere_api)
+                result = cohere_generate_readme(_cohere_api=cohere_api, remote_origin=github_path)
 
                 with st.spinner("GitAgent is thinking..."):
                     readme = st.write_stream(create_stream_result_function(result))
@@ -222,7 +249,7 @@ if repo_link:
         elif option == "Dockerfile Generator":
             result = cohere_dockerfile_generation(_cohere_api=cohere_api)
             
-            commit_to_repo = st.checkbox("Commit Dockerfile to repository")
+            commit_to_repo = st.checkbox("Commit Dockerfile to repository", value=True)
             
             if st.button("Generate Dockerfile"):
                 with st.spinner("GitAgent is working..."):
