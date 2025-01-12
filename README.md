@@ -8,7 +8,7 @@ To install GitAgent, follow these steps:
 
 1. Clone the repository:
 ```
-git clone https://github.com/manas/GitAgent.git
+git clone https://github.com/SuperMK15/GitAgent.git
 ```
 
 2. Navigate to the project directory:
@@ -24,8 +24,8 @@ pip install -r requirements.txt
 ## Usage
 
 To use GitAgent, simply run the following command:
-```
-python git_agent.py
+```bash
+streamlit run git_agent.py
 ```
 
 This will start the GitAgent application, which will allow you to perform various operations on your GitHub repository.
@@ -40,18 +40,4 @@ This will start the GitAgent application, which will allow you to perform variou
 
 ## Configuration
 
-GitAgent requires a GitHub personal access token with repository permissions. You can set this token in the `config.ini` file.
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch: `git checkout -b my-new-feature`
-3. Make your changes and commit them: `git commit -am 'Add some feature'`
-4. Push to the branch: `git push origin my-new-feature`
-5. Submit a pull request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+GitAgent requires a GitHub personal access token with repository permissions, as well as a CoHere API token. You can set this token in the `.streamlit/secrets.toml` file.
