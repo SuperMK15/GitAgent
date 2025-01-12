@@ -62,7 +62,7 @@ def cohere_semantic_search(_cohere_api: CohereAPI, search_query: str):
     :param prompt: The user prompt
     :return: The result of the Cohere prompt
     """
-    prompt = f"Search for the code snippet related to '{search_query}' in the code_repo in the documents. Return the code snippet AND ADD A COMMENT TO THE FIRST LINE WITH THE FILE PATH."
+    prompt = f"Search for the code snippet related to '{search_query}' in the code_repo in the documents. Return just the code relevant snippet."
     return _cohere_api.send_prompt(prompt, stream=False)
 
 # Cache the results of Cohere Dockerfile generation
@@ -86,11 +86,17 @@ def cohere_commenter(_cohere_api: CohereAPI, code: str):
     :param filepath: The file path to refactor
     :return: The result of the Cohere prompt
     """
+    
+    cohere_api.set_documents([{"title": "code_to_comment", "snippet": code}])
+    
     prompt = (
-        "Add commenting to the following code:\n\n"
+        "Add detailed, descriptive inline comments to the following code. "
+        "Explain the purpose of each line or block of code, and return the fully commented code:\n\n"
         f"{code}\n\n"
-        "Return just the commented file."
+        "Return only the commented code as the output."
     )
+    
+    print (prompt)
     
     return _cohere_api.send_prompt(prompt, stream=False)
 
@@ -104,10 +110,14 @@ def cohere_refactor(_cohere_api: CohereAPI, code: str, instructions: str):
     :param instructions: The refactoring instructions
     :return: The result of the Cohere prompt
     """
+    
+    cohere_api.set_documents([{"title": "code_to_refactor", "snippet": code}])
+    
     prompt = (
         f"Please refactor the following code according to the provided instructions: {instructions}\n\n"
         "Code:\n"
         f"{code}\n\n"
+        "Return only the refactored code as the output."
     )
     
     return _cohere_api.send_prompt(prompt, stream=False)
@@ -199,11 +209,11 @@ if repo_link:
             
             if filepath:
                 file_content = fetch_file_content(_github_api=github_api, path=filepath)
-                st.code(fetch_file_content(_github_api=github_api, path=filepath), line_numbers=True, wrap_lines = False)
+                st.code(file_content, line_numbers=True, wrap_lines = False)
                 
                 if st.button("Comment!"):
                     with st.spinner("GitAgent is commenting..."):
-                        commented_code = cohere_commenter(_cohere_api=cohere_api, code=file_content)
+                        commented_code = cohere_commenter(_cohere_api=cohere_api, code=fetch_file_content(_github_api=github_api, path=filepath))
                     
                     st.write(commented_code)
                     
