@@ -55,6 +55,9 @@ class GitHubAPI:
         :param branch: Branch to commit the file to (default: main).
         :return: JSON response containing the commit details.
         """
+        if self.access_token == "":
+            raise ValueError("Access token is required to commit files to GitHub.")
+        
         url = f"{self.base_url}/repos/{self.owner}/{self.repo}/git/refs/heads"
         headers = {
             "Accept": "application/vnd.github.v3+json",
