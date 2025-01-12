@@ -5,9 +5,15 @@ from api.cohere_api import CohereAPI  # type: ignore
 from api.github_api import GitHubAPI  # type: ignore
 import re
 
+deployed = True
+
 # Title of the application
+st.image("GitAgent.png", width=150)
 st.title("GitAgent")
 st.write("Your personal Git-enabled AI agent.")
+
+if deployed:
+    st.warning("To enable direct committing to the repository, you must clone the project and add your GitHub API key to the `secrets.toml` file.")
 
 st.divider()
 
