@@ -16,5 +16,7 @@ def create_stream_result_function(result):
                 if event.type == "content-delta":
                     print(event.delta.message.content.text)
                     yield event.delta.message.content.text
+                elif event.type == "message-end":
+                    break
 
     return stream_result
